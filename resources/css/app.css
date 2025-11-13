@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definisikan font-face */
+@font-face {
+    font-family: 'Helvetica';
+    src: url('../fonts/HelveticaNeue.ttf') format('truetype');
+}
+
+/* Terapkan font ke seluruh aplikasi */
+body {
+    font-family: 'Helvetica', sans-serif;
+}

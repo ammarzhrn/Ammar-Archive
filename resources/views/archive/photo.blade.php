@@ -1,0 +1,96 @@
+<x-app-layout>
+  <div 
+      x-data="{
+          images: [
+              {
+                  src: 'https://images.unsplash.com/photo-1739935537397-dcd1074bbaef?q=80&w=3473&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                  link: '#'
+              },
+              {
+                  src: 'https://images.unsplash.com/photo-1739935345943-2a359931fe67?q=80&w=2273&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                  link: '#'
+              },
+              {
+                  src: 'https://images.unsplash.com/photo-1739935559370-4ec662f73c8e?q=80&w=2273&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                  link: '#'
+              },
+              {
+                  src: 'https://images.unsplash.com/photo-1739935326962-eea0430fe62d?q=80&w=2273&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                  link: '#'
+              },
+              {
+                  src: 'https://images.unsplash.com/photo-1739935379561-b0db7edc4b77?q=80&w=2273&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                  link: '#'
+              }
+          ],
+          currentIndex: 0,
+          prev() {
+              this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+          },
+          next() {
+              this.currentIndex = (this.currentIndex + 1) % this.images.length;
+          }
+      }"
+      class="w-screen h-screen pb-10 relative transition-opacity duration-500 ease-in-out opacity-100 bg-white flex justify-start items-center flex-col pt-[10%]"
+  >
+
+      <!-- Back Button -->
+      <div class="absolute top-[1.5vh] right-[20%] flex justify-center group z-50">
+          <a class="w-[300px] border-l-2 border-b-2 border-neutral-600 text-start text-black font-extralight text-lg px-1 bg-white hover:bg-gradient-to-b hover:from-white hover:to-zinc-400 transition flex justify-between items-center" href="{{route('archive.index')}}">
+              <span>back</span>
+              <svg height="16" viewBox="0 0 13 12" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.752513 3.00251C0.615829 3.1392 0.615829 3.3608 0.752513 3.49749L2.9799 5.72487C3.11658 5.86156 3.33819 5.86156 3.47487 5.72487C3.61156 5.58819 3.61156 5.36658 3.47487 5.2299L1.49497 3.25L3.47487 1.2701C3.61156 1.13342 3.61156 0.91181 3.47487 0.775126C3.33819 0.638443 3.11658 0.638443 2.9799 0.775126L0.752513 3.00251ZM5.5 11.1H8.25V10.4H5.5V11.1ZM8.25 2.9H1V3.6H8.25V2.9ZM12.35 7C12.35 4.73563 10.5144 2.9 8.25 2.9V3.6C10.1278 3.6 11.65 5.12223 11.65 7H12.35ZM8.25 11.1C10.5144 11.1 12.35 9.26437 12.35 7H11.65C11.65 8.87777 10.1278 10.4 8.25 10.4V11.1Z" fill="black"/>
+              </svg>
+          </a>
+      </div>
+
+      <!-- Main Image -->
+      <div class="absolute top-[1.5%] bottom-[1.5%] left-[1%] right-[20%]">
+          <template x-for="(item, i) in images" :key="i">
+              <a :href="item.link">
+                  <img 
+                      x-show="currentIndex === i" 
+                      :src="item.src" 
+                      alt="Thumbnail" 
+                      class="w-full h-full object-cover border-2 border-neutral-600" 
+                      x-transition.opacity
+                  >
+              </a>
+          </template>
+      </div>
+
+      {{-- Scrollable Image List --}}
+      <div class="absolute top-0 right-0 h-full w-[20%] overflow-y-auto">
+          <div class="flex flex-col gap-2 p-2">
+              <template x-for="(item, i) in images" :key="i">
+                  <button 
+                      @click="currentIndex = i" 
+                      class="relative hover:brightness-110 transition focus:outline-none"
+                      :class="{'ring-1 ring-black': currentIndex === i}"
+                  >
+                      <img :src="item.src" class="w-full object-cover" alt="Thumbnail list">
+                      <!-- Overlay indicator -->
+                      <div x-show="currentIndex === i" class="absolute inset-0 bg-black/30"></div>
+                  </button>
+              </template>
+          </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="absolute bottom-[1.5vh] right-[20%] grid grid-cols-2 group z-50 border-l-2 border-t-2 border-neutral-600">
+          <!-- Left -->
+          <button @click="prev" class="w-[70px] h-[70px] bg-white flex items-center justify-center text-black hover:bg-gradient-to-r hover:from-white hover:to-zinc-400 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="15,5 15,19 5,12" />
+            </svg>
+          </button>
+        
+          <!-- Right -->
+          <button @click="next" class="w-[70px] h-[70px] bg-white flex items-center justify-center text-black hover:bg-gradient-to-l hover:from-white hover:to-zinc-400 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="9,5 9,19 19,12" />
+            </svg>
+          </button>
+      </div>
+  </div>
+</x-app-layout>
