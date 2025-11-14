@@ -1,26 +1,45 @@
 import fs from 'fs';
 import { execSync } from 'child_process';
+import { glob } from 'glob';
 
 // Read manifest
 const manifest = JSON.parse(fs.readFileSync('public/build/manifest.json', 'utf8'));
 const cssFile = manifest['resources/css/app.css'].file;
 const jsFile = manifest['resources/js/app.js'].file;
 
-// Fix all HTML files - note: manifest file already includes 'assets/' in filename
-const commands = [
-  `s|http://\\[::1\\]:5173/@vite/client|/build/${jsFile}|g`,
-  `s|http://\\[::1\\]:5173/resources/css/app.css|/build/${cssFile}|g`,
-  `s|http://\\[::1\\]:5173/resources/js/app.js|/build/${jsFile}|g`,
-  `s|/build/@vite/client|/build/${jsFile}|g`,
-  `s|/build/resources/css/app.css|/build/${cssFile}|g`,
-  `s|/build/resources/js/app.js|/build/${jsFile}|g`,
-  `s|/build/assets/assets/|/build/assets/|g`,
-  `s|http://localhost/build/|/build/|g`,
-  `s|http://127.0.0.1:8000/build/|/build/|g`,
-  `s|http://127.0.0.1:8000/|/|g`
-].join('; ');
+// Find all HTML files
+const htmlFiles = glob.sync('dist/**/*.html');
 
-execSync(`find dist -name '*.html' -type f -exec sed -i '' "${commands}" {} \\;`, { stdio: 'inherit' });
+// Fix each HTML file
+htmlFiles.forEach(file => {
+  let content = fs.readFileSync(file, 'utf8');
+  
+  // Fix Vite dev server URLs
+  content = content.replace(/http:\/\/\[::1\]:5173\/@vite\/client/g, `/build/${jsFile}`);
+  content = content.replace(/http:\/\/\[::1\]:5173\/resources\/css\/app\.css/g, `/build/${cssFile}`);
+  content = content.replace(/http:\/\/\[::1\]:5173\/resources\/js\/app\.js/g, `/build/${jsFile}`);
+  content = content.replace(/\/build\/@vite\/client/g, `/build/${jsFile}`);
+  content = content.replace(/\/build\/resources\/css\/app\.css/g, `/build/${cssFile}`);
+  content = content.replace(/\/build\/resources\/js\/app\.js/g, `/build/${jsFile}`);
+  content = content.replace(/\/build\/assets\/assets\//g, '/build/assets/');
+  
+  // Fix asset paths
+  content = content.replace(/http:\/\/localhost\/build\//g, '/build/');
+  content = content.replace(/http:\/\/127\.0\.0\.1:8000\/build\//g, '/build/');
+  
+  // Fix anchor links (href attributes)
+  content = content.replace(/href="http:\/\/localhost"/g, 'href="/"');
+  content = content.replace(/href="http:\/\/localhost\//g, 'href="/');
+  content = content.replace(/href="http:\/\/127\.0\.0\.1:8000"/g, 'href="/"');
+  content = content.replace(/href="http:\/\/127\.0\.0\.1:8000\//g, 'href="/');
+  
+  // Fix any remaining localhost URLs (catch-all)
+  content = content.replace(/http:\/\/127\.0\.0\.1:8000\//g, '/');
+  content = content.replace(/http:\/\/localhost\//g, '/');
+  
+  fs.writeFileSync(file, content, 'utf8');
+});
 
+console.log(`✅ Fixed paths in ${htmlFiles.length} HTML files`);
 console.log('✅ All paths fixed with production assets');
 
