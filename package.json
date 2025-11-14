@@ -4,7 +4,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "export": "npm run build && php artisan export --urls=http://127.0.0.1:8000/ --urls=http://127.0.0.1:8000/contact --urls=http://127.0.0.1:8000/aboutme --urls=http://127.0.0.1:8000/archive --urls=http://127.0.0.1:8000/archive/web --urls=http://127.0.0.1:8000/archive/photo --urls=http://127.0.0.1:8000/archive/design && cp -r public/build dist/build && find dist -name '*.html' -type f -exec sed -i '' 's|http://localhost/build/|/build/|g' {} \\; && find dist -name '*.html' -type f -exec sed -i '' 's|http://127.0.0.1:8000/build/|/build/|g' {} \\; && find dist -name '*.html' -type f -exec sed -i '' 's|http://127.0.0.1:8000/|/|g' {} \\;"
+    "export": "npm run build && php artisan export && cp -r public/build dist/build && node fix-export-paths.js"
   },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
