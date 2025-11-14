@@ -1,0 +1,72 @@
+name: Auto Export Static Site
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'dist/**'
+      - '.github/**'
+  workflow_dispatch:
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          coverage: none
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+      
+      - name: Install NPM dependencies
+        run: npm ci
+      
+      - name: Build assets
+        run: npm run build
+      
+      - name: Start Laravel server
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 > /dev/null 2>&1 &
+          sleep 5
+      
+      - name: Export static site
+        run: |
+          php artisan export \
+            --urls=http://127.0.0.1:8000/ \
+            --urls=http://127.0.0.1:8000/contact \
+            --urls=http://127.0.0.1:8000/aboutme \
+            --urls=http://127.0.0.1:8000/archive \
+            --urls=http://127.0.0.1:8000/archive/web \
+            --urls=http://127.0.0.1:8000/archive/photo \
+            --urls=http://127.0.0.1:8000/archive/design
+      
+      - name: Copy build assets and fix paths
+        run: |
+          cp -r public/build dist/build || true
+          find dist -name '*.html' -type f -exec sed -i 's|http://localhost/build/|/build/|g' {} \;
+          find dist -name '*.html' -type f -exec sed -i 's|http://127.0.0.1:8000/build/|/build/|g' {} \;
+          find dist -name '*.html' -type f -exec sed -i 's|http://127.0.0.1:8000/|/|g' {} \;
+      
+      - name: Commit and push dist folder
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add dist/
+          git diff --staged --quiet || git commit -m "Auto-export static site [skip ci]"
+          git push
+
